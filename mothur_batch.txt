@@ -1,0 +1,72 @@
+###The following are the commands from the mothur SOP that were used in our analysis.
+# make contigs assembling pairs
+#make.contigs(file=desc.txt, processors=48);
+# making a summary to see the size distribution
+#summary.seqs(fasta=desc.trim.contigs.fasta);
+# check the minimum and the maximum size you may want to cut
+#screen.seqs(fasta=desc.trim.contigs.fasta, group=desc.contigs.groups, maxambig=4, minlength=439, maxlength=466);
+# make unique fasta sequences in order to waste time with alignment
+#unique.seqs(fasta=desc.trim.contigs.good.fasta);
+# change the name of sequences creating an index table to save space
+#count.seqs(name=desc.trim.contigs.good.names, group=desc.contigs.good.groups);
+# again a new summary
+#summary.seqs(count=desc.trim.contigs.good.count_table, fasta=desc.trim.contigs.good.unique.fasta);
+# now we need to align our unique sequences to the cut reference alignment
+#align.seqs(fasta=desc.trim.contigs.good.unique.fasta, reference=silva.nr_v119.pcr.align, ksize=8, processors=48);
+# a new summary
+#summary.seqs(fasta=desc.trim.contigs.good.unique.align, count=desc.trim.contigs.good.count_table);
+# remove artifacts for size and number of homopolimers
+#screen.seqs(fasta=desc.trim.contigs.good.unique.align, count=desc.trim.contigs.good.count_table, summary=desc.trim.contigs.good.unique.summary, minlength=402, start=5, end=17017, maxhomop=12);
+# remove gaps in the alignment
+#filter.seqs(fasta=desc.trim.contigs.good.unique.good.align, vertical=T, trump=.);
+# again unique
+#unique.seqs(fasta=desc.trim.contigs.good.unique.good.filter.fasta, count=desc.trim.contigs.good.good.count_table);
+#summary.seqs(count=desc.trim.contigs.good.unique.good.filter.count_table, fasta=desc.trim.contigs.good.unique.good.filter.unique.fasta);
+# now we cluster sequences allowing 4 mismatches (1 for 100 bp)
+#pre.cluster(fasta=desc.trim.contigs.good.unique.good.filter.unique.fasta, count=desc.trim.contigs.good.unique.good.filter.count_table, diffs=4);
+#screen seqs
+#screen.seqs(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.fasta)
+#### optional (remove rare clusters)
+#split.abund(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.count_table, cutoff=1, accnos=true)
+# flag the chimeras
+#chimera.uchime(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.fasta, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.count_table, dereplicate=t);
+# remove chimeras from the fasta file
+#remove.seqs(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.fasta, accnos=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.accnos)
+# again a summary seqs
+#summary.seqs(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.fasta, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.pick.count_table);
+#classify sequences assigning to a family
+#classify.seqs(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.fasta, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.pick.count_table, reference=silva_mothur/trainset9_032012.pds.fasta, taxonomy=silva_mothur/trainset9_032012.pds.tax, cutoff=80, processors=48);
+#remove undesired lineages (unknown)
+#remove.lineage(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.fasta, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.pick.count_table, taxonomy=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pds.wang.taxonomy, taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota);
+
+
+
+#cluster sequences in OTUs
+#dist.seqs(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.fasta, cutoff=0.20, processors=48);
+#cluster(column=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.dist, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.uchime.pick.pick.count_table)
+
+#summary.seqs(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.fasta, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.pick.pick.count_table, processors=48);
+#cluster.split(fasta=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.fasta, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.pick.pick.count_table, taxonomy=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pds.wang.pick.taxonomy, splitmethod=classify, taxlevel=6, cutoff=0.15, processors=48);
+
+
+
+
+#we add a cut.off of 0.03
+#make.shared(list=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.an.unique_list.list, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.pick.pick.count_table, label=0.03);
+#classify.otu(list=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.an.unique_list.list, count=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.denovo.uchime.pick.pick.count_table, taxonomy=desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pds.wang.pick.taxonomy, label=0.03)
+
+#change the names
+#system(mv desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.an.unique_list.shared desc.an.spl.shared)
+#system(mv desc.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.pick.an.unique_list.0.03.cons.taxonomy desc.an.cons.spl.taxonomy)
+#count sequences in each group (sample)
+#count.groups(shared=desc.an.spl.shared)
+#we sub.sample to the smallest one
+#rarefaction.single(shared=desc.an.spl.shared, calc=sobs, freq=100)
+#sub.sample(shared=desc.an.spl.shared, size=9494)
+#summary.single(shared=desc.an.spl.0.03.subsample.shared, calc=nseqs-coverage-sobs-invsimpson, subsample=T)
+#####summary.single(shared=desc.an.shared, calc=nseqs-coverage-sobs-invsimpson, subsample=T)
+#get.relabund(shared=desc.an.spl.0.03.subsample.shared)
+
+#To display taxonomy at different levels, use:
+#python taxonomy_mothur_abundance_silvaDB_v1.2.py -p
+#python taxonomy_mothur_abundance_silvaDB_v1.2.py -p 2 -t desc.an.cons.spl.taxonomy -s desc.an.spl.shared
